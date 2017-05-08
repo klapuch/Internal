@@ -44,42 +44,14 @@ final class SessionExtension extends Tester\TestCase {
 	public function testNoPassedSetting() {
 		$extension = new Internal\SessionExtension([]);
 		$extension->improve();
-		Assert::match('~^Set-Cookie: PHPSESSID=\S+; path=/;$~', headers_list()[4]);
+		Assert::match('~^Set-Cookie: PHPSESSID=\S+; path=/$~', headers_list()[1]);
 	}
 
 	public function testPassingSetting() {
 		$extension = new Internal\SessionExtension(['cookie_httponly' => true]);
 		$extension->improve();
-		Assert::contains('HttpOnly', headers_list()[4]);
+		Assert::contains('HttpOnly', headers_list()[1]);
 		Assert::true(session_get_cookie_params()['httponly']);
-	}
-
-	public function testSettingSameSite() {
-		$extension = new Internal\SessionExtension(['SameSite' => 'strict']);
-		$extension->improve();
-		$cookie = headers_list()[4];
-		Assert::match(
-			'~^Set-Cookie: PHPSESSID=\S+; path=/; SameSite=strict$~',
-			$cookie
-		);
-	}
-
-	public function testSettingSameSiteAsCaseInsensitive() {
-		$extension = new Internal\SessionExtension(['sAmESiTe' => 'strict']);
-		$extension->improve();
-		$cookie = headers_list()[4];
-		Assert::contains('Set-Cookie: ', $cookie);
-		Assert::contains('; SameSite=strict', $cookie);
-	}
-
-	public function testProprietarSettingAfterRegeneration() {
-		$extension = new Internal\SessionExtension(['SameSite' => 'strict'], 1);
-		$extension->improve();
-		$_SESSION['_timer'] = time() - 2;
-		$extension->improve();
-		$cookie = headers_list()[4];
-		Assert::contains('Set-Cookie: ', $cookie);
-		Assert::contains('; SameSite=strict', $cookie);
 	}
 }
 

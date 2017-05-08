@@ -5,7 +5,6 @@ namespace Klapuch\Internal;
 final class SessionExtension implements Extension {
 	private const TIMER = '_timer',
 		DEFAULT_BREAK = 20;
-	private const PROPRIETARIES = ['SameSite'];
 	private $settings;
 	private $break;
 
@@ -16,59 +15,14 @@ final class SessionExtension implements Extension {
 
 	public function improve(): void {
 		if (session_status() === PHP_SESSION_NONE)
-			session_start($this->native($this->settings));
+			session_start($this->settings);
 		if ($this->elapsed($this->break))
 			session_regenerate_id(true);
-		header(static::raw($this->settings));
 		$_SESSION[self::TIMER] = time();
 	}
 
 	private function elapsed(int $break): bool {
 		return isset($_SESSION[self::TIMER])
 		&& (time() - $_SESSION[self::TIMER]) > $break;
-	}
-
-	/**
-	 * Just the native and supported php setting
-	 * @param array $settings
-	 * @return array
-	 */
-	private function native(array $settings): array {
-		return array_diff_ukey(
-			$settings,
-			array_flip(self::PROPRIETARIES),
-			'strcasecmp'
-		);
-	}
-
-	/**
-	 * The raw cookie header
-	 * @param array $settings
-	 * @return string
-	 */
-	private static function raw(array $settings): string {
-		$matches = array_intersect_ukey(
-			array_flip(self::PROPRIETARIES),
-			$settings,
-			'strcasecmp'
-		);
-		$headers = array_combine(
-			array_flip($matches),
-			array_intersect_ukey($settings, $matches, 'strcasecmp')
-		);
-		return sprintf(
-			'%s; %s',
-			current(preg_grep('~^Set-Cookie: ~', headers_list())),
-			implode(
-				';',
-				array_map(
-					function(string $field, string $value): string {
-						return sprintf('%s=%s', $field, $value);
-					},
-					array_keys($headers),
-					$headers
-				)
-			)
-		);
 	}
 }
