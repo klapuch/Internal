@@ -1,0 +1,3 @@
+parameters:
+	ignoreErrors:
+		- '~Function session_start invoked with 1 parameter, 0 required~'
