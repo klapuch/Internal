@@ -10,13 +10,14 @@ final class HeaderExtension implements Extension {
 	}
 
 	public function improve(): void {
+		$headers = array_filter(array_map('trim', $this->headers), 'strlen');
 		(new RawHeaderExtension(
 			array_map(
 				function(string $field, string $value): string {
 					return sprintf('%s:%s', $field, $value);
 				},
-				array_keys($this->headers),
-				$this->headers
+				array_keys($headers),
+				$headers
 			)
 		))->improve();
 	}
