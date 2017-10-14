@@ -18,6 +18,20 @@ final class HeaderExtension extends Tester\TestCase {
 		Assert::contains('Name:Value', headers_list());
 		Assert::contains('Foo:bar', headers_list());
 	}
+
+	public function testRemovingEmptyHeaders() {
+		(new Internal\HeaderExtension(
+			[
+				'removed' => '',
+				'removed2' => null,
+				'removed3' => ' ',
+				'kept' => '0',
+				'x-powered-by' => '',
+			]
+		))->improve();
+		Assert::count(1, headers_list());
+		Assert::contains('kept:0', headers_list());
+	}
 }
 
 
