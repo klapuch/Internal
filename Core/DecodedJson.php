@@ -14,7 +14,14 @@ final class DecodedJson implements Collection {
 		$this->options = $options;
 	}
 
+	/**
+	 * @throws \UnexpectedValueException
+	 * @return array
+	 */
 	public function values(): array {
-		return json_decode($this->json, true, 512, $this->options);
+		$decoded = json_decode($this->json, true, 512, $this->options);
+		if (json_last_error() === JSON_ERROR_NONE)
+			return $decoded;
+		throw new \UnexpectedValueException('JSON is not valid', json_last_error());
 	}
 }
